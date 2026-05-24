@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Restaurant Rush</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #game-container {
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container"></div>
+    <script src="game.js"></script>
+</body>
+</html>
+// --- SCENE SETUP ---
+class RestaurantScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'RestaurantScene' });
+    }
+
+    preload() {
+        // We will load real images (sprites) here later.
+        // For now, we will generate placeholder graphics in the 'create' function.
+    }
+
+    create() {
+        // 1. Create the Restaurant Floor (Background)
+        this.cameras.main.setBackgroundColor('#f4d03f'); // Bright, welcoming yellow
+
+        // 2. Create the Player (Placeholder: Blue Square)
+        // We use a Rectangle and enable Arcade Physics on it.
+        this.player = this.add.rectangle(400, 300, 40, 40, 0x3498db);
+        this.physics.add.existing(this.player);
+        
+        // Prevent player from walking off the screen
+        this.player.body.setCollideWorldBounds(true);
+        
+        // Player stats
+        this.playerSpeed = 250;
+
+        // 3. Setup Controls
+        // Creates an object with Up, Down, Left, Right (Arrow Keys)
+        this.cursors = this.input.keyboard.createCursorKeys();
+        
+        // Add WASD keys
+        this.wasd = this.input.keyboard.addKeys({
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            right: Phaser.Input.Keyboard.KeyCodes.D
+        });
+    }
+
+    update() {
+        // --- PLAYER MOVEMENT LOGIC ---
+        
+        // Reset velocity every frame so the player stops when keys are released
+        this.player.body.setVelocity(0);
+
+        // Check horizontal movement (Left/Right)
+        if (this.cursors.left.isDown || this.wasd.left.isDown) {
+            this.player.body.setVelocityX(-this.playerSpeed);
+        } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+            this.player.body.setVelocityX(this.playerSpeed);
+        }
+
+        // Check vertical movement (Up/Down)
+        if (this.cursors.up.isDown || this.wasd.up.isDown) {
+            this.player.body.setVelocityY(-this.playerSpeed);
+        } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+            this.player.body.setVelocityY(this.playerSpeed);
+        }
+
+        // Normalize diagonal movement speed
+        // This prevents the player from moving faster when holding two keys (e.g., Up + Right)
+        this.player.body.velocity.normalize().scale(this.playerSpeed);
+    }
+}
+
+// --- GAME CONFIGURATION ---
+const config = {
+    type: Phaser.AUTO, // Uses WebGL if available, falls back to Canvas
+    width: 800,        // Game width
+    height: 600,       // Game height
+    parent: 'game-container',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false, // Set to true later to see collision boxes
+            gravity: { y: 0 } // Top-down game, so zero gravity
+        }
+    },
+    scene: [RestaurantScene]
+};
+
+// Initialize the game
+const game = new Phaser.Game(config);
